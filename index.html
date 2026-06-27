@@ -387,50 +387,8 @@
             <h3 class="display-sm" style="margin-top: var(--spacing-xxl);">2.3 Data Schema (ERD)</h3>
             <p>The following Entity-Relationship Diagram outlines the core data structures used in the local JSON database to store users, meetings, and AI-generated insights.</p>
             
-            <div class="mermaid-wrapper">
-              <div class="mermaid">
-                erDiagram
-                  USER ||--o{ MEETING : creates
-                  MEETING ||--o{ ACTION_ITEM : contains
-                  MEETING ||--o{ DECISION : records
-                  MEETING ||--o{ TRANSCRIPT_SEGMENT : includes
-                  MEETING ||--|| MEETING_SUMMARY : has
-
-                  USER {
-                      string id PK
-                      string name
-                      string email
-                      string provider
-                  }
-                  MEETING {
-                      string id PK
-                      string userId FK
-                      string title
-                      string status
-                      int durationSec
-                  }
-                  MEETING_SUMMARY {
-                      string shortSummary
-                      string detailedSummary
-                      string keywords
-                  }
-                  ACTION_ITEM {
-                      string id PK
-                      string title
-                      string assignee
-                      string status
-                  }
-                  DECISION {
-                      string id PK
-                      string title
-                  }
-                  TRANSCRIPT_SEGMENT {
-                      int startTimeSec
-                      int endTimeSec
-                      string speakerLabel
-                      string text
-                  }
-              </div>
+            <div class="mermaid-wrapper" style="display: flex; justify-content: center; padding: 0; overflow: hidden; border: none; background: transparent;">
+              <img src="./erd_diagram.png" alt="Database Schema ERD" style="width: 100%; max-width: 800px; height: auto; display: block; border-radius: var(--rounded-lg); box-shadow: 0 4px 24px rgba(0,0,0,0.06);" />
             </div>
 
           </div>
