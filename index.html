@@ -271,7 +271,8 @@
     .mermaid svg {
       width: 100% !important;
       max-width: none !important;
-      /* removed height: auto to prevent clipping at the bottom */
+      height: auto !important;
+      overflow: visible !important; /* Fixes Mermaid bounding box clipping bugs */
     }
     
     code {
