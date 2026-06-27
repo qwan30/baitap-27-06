@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software Requirements Specification - AI Meeting Recorder</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Design Tokens (ElevenLabs Editorial Theme) */
+    :root {
+      /* Colors */
+      --colors-primary: #292524;
+      --colors-primary-active: #0c0a09;
+      --colors-canvas: #f5f5f5;
+      --colors-canvas-soft: #fafafa;
+      --colors-surface-card: #ffffff;
+      --colors-surface-strong: #f0efed;
+      --colors-hairline: #e7e5e4;
+      --colors-hairline-strong: #d6d3d1;
+      --colors-ink: #0c0a09;
+      --colors-body: #4e4e4e;
+      --colors-body-strong: #292524;
+      --colors-muted: #777169;
+      --colors-on-primary: #ffffff;
+      
+      /* Gradients */
+      --gradient-mint: #a7e5d3;
+      --gradient-peach: #f4c5a8;
+      --gradient-lavender: #c8b8e0;
+      --gradient-sky: #a8c8e8;
+      --gradient-rose: #e8b8c4;
+      
+      /* Spacing */
+      --spacing-base: 16px;
+      --spacing-md: 20px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-xxl: 48px;
+      --spacing-section: 96px;
+      
+      /* Border Radius */
+      --rounded-md: 8px;
+      --rounded-lg: 12px;
+      --rounded-xl: 16px;
+      --rounded-pill: 9999px;
+    }
+
+    /* Base Setup */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--colors-canvas);
+      color: var(--colors-body);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'EB Garamond', serif;
+      font-weight: 400; 
+      color: var(--colors-ink);
+    }
+
+    .display-mega { font-size: 56px; line-height: 1.05; letter-spacing: -1px; margin-bottom: var(--spacing-lg); }
+    .display-xl { font-size: 40px; line-height: 1.08; letter-spacing: -0.5px; }
+    .display-lg { font-size: 32px; line-height: 1.17; letter-spacing: -0.36px; }
+    .display-md { font-size: 26px; line-height: 1.13; letter-spacing: -0.32px; }
+    .display-sm { font-size: 22px; line-height: 1.2; font-weight: 500; }
+    
+    .body-strong { font-weight: 600; color: var(--colors-body-strong); }
+    .caption-uppercase { font-size: 12px; font-weight: 600; line-height: 1.4; letter-spacing: 0.96px; text-transform: uppercase; color: var(--colors-muted); }
+
+    /* Layout */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-xl);
+      position: relative;
+      z-index: 10;
+    }
+
+    section {
+      padding: var(--spacing-xxl) 0;
+    }
+
+    /* Atmospheric Orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .orb-mint { background: var(--gradient-mint); width: 400px; height: 400px; top: 5%; left: -10%; }
+    .orb-peach { background: var(--gradient-peach); width: 350px; height: 350px; top: 25%; right: -5%; }
+    .orb-lavender { background: var(--gradient-lavender); width: 500px; height: 500px; top: 50%; left: 15%; opacity: 0.3; }
+    .orb-sky { background: var(--gradient-sky); width: 450px; height: 450px; top: 75%; right: 10%; opacity: 0.4; }
+    
+    /* Top Nav */
+    .top-nav {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--spacing-xl);
+      background: rgba(245, 245, 245, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--colors-hairline);
+    }
+    .nav-brand { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--colors-ink); text-decoration: none; font-weight: 500; }
+    
+    /* Buttons */
+    .button-primary {
+      background: var(--colors-primary);
+      color: var(--colors-on-primary);
+      padding: 8px 20px;
+      border-radius: var(--rounded-pill);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .button-primary:hover { background: var(--colors-primary-active); }
+
+    /* Hero */
+    .hero-band {
+      text-align: center;
+      position: relative;
+      padding: var(--spacing-section) 0 var(--spacing-xxl) 0;
+    }
+    .hero-band .body-md { max-width: 650px; margin: 0 auto; color: var(--colors-body); font-size: 18px; }
+
+    /* Document Header Info */
+    .doc-meta {
+      display: flex;
+      justify-content: center;
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-xl);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--colors-hairline-strong);
+    }
+    .meta-item { text-align: left; }
+    .meta-item span { display: block; }
+
+    /* Accordion / Content Cards */
+    .card {
+      background: var(--colors-surface-card);
+      border-radius: var(--rounded-xl);
+      border: 1px solid var(--colors-hairline);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+    }
+    
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding-bottom: 0;
+      transition: padding 0.3s ease;
+    }
+    .accordion-header.active {
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--colors-hairline);
+    }
+    
+    .accordion-header:hover .display-md { color: var(--colors-primary-active); }
+    .accordion-header .icon {
+      font-size: 24px;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      color: var(--colors-muted);
+      background: var(--colors-surface-strong);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .accordion-header.active .icon { transform: rotate(180deg); background: var(--colors-hairline-strong); color: var(--colors-ink); }
+    
+    .accordion-content {
+      display: none;
+      padding-top: var(--spacing-lg);
+    }
+    .accordion-content.active { display: block; }
+    
+    /* Content Typography inside cards */
+    .content-block { margin-bottom: var(--spacing-xl); }
+    .content-block:last-child { margin-bottom: 0; }
+    .content-block h3 { margin-bottom: var(--spacing-md); border-left: 3px solid var(--colors-ink); padding-left: 12px; }
+    .content-block h4 { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-base); font-size: 18px; font-family: 'Inter', sans-serif; font-weight: 600;}
+    .content-block p { margin-bottom: var(--spacing-base); color: var(--colors-body); }
+    .content-block ul { margin-left: var(--spacing-lg); margin-bottom: var(--spacing-base); color: var(--colors-body); }
+    .content-block li { margin-bottom: 8px; padding-left: 8px; }
+
+    /* Tables */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+      border-radius: var(--rounded-md);
+      border: 1px solid var(--colors-hairline);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--colors-surface-card);
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--colors-hairline);
+    }
+    th {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      color: var(--colors-ink);
+      background: var(--colors-canvas-soft);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--colors-canvas-soft); }
+
+    /* Mermaid Enlarged Wrapper */
+    .mermaid-wrapper {
+      background: var(--colors-canvas-soft);
+      border-radius: var(--rounded-lg);
+      padding: var(--spacing-xl);
+      margin: var(--spacing-lg) 0;
+      border: 1px solid var(--colors-hairline);
+      /* Make it scrollable if it exceeds width */
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+    
+    .mermaid {
+      /* Force the diagram to be large */
+      min-width: 850px; /* Big enough to read easily */
+      margin: 0 auto; 
+      padding-bottom: 16px; /* Space to prevent scrollbar overlap */
+    }
+    
+    /* Ensure Mermaid SVG scales to the min-width and maintains aspect ratio */
+    .mermaid svg {
+      width: 100% !important;
+      max-width: none !important;
+      /* removed height: auto to prevent clipping at the bottom */
+    }
+    
+    code {
+      background: var(--colors-surface-strong);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--colors-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="orb orb-mint"></div>
+  <div class="orb orb-peach"></div>
+  <div class="orb orb-lavender"></div>
+  <div class="orb orb-sky"></div>
+
+  <!-- Navigation -->
+  <header class="top-nav">
+    <div class="nav-brand">AI Meeting Recorder</div>
+    <div>
+      <div class="button-primary">Download PDF</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero-band js-fade-in">
+      <h1 class="display-mega">Software Requirements<br>Specification (SRS)</h1>
+      <p class="body-md">Comprehensive architectural and functional documentation for the AI Meeting Recorder platform, covering system context, functional requirements, interfaces, and data structures.</p>
+      
+      <div class="doc-meta">
+        <div class="meta-item">
+          <span class="caption-uppercase">Project</span>
+          <span class="body-strong">AI Meeting Recorder</span>
+        </div>
+        <div class="meta-item">
+          <span class="caption-uppercase">Version</span>
+          <span class="body-strong">1.0.0</span>
+        </div>
+        <div class="meta-item">
+          <span class="caption-uppercase">Status</span>
+          <span class="body-strong" style="color: #16a34a;">Approved</span>
+        </div>
+        <div class="meta-item">
+          <span class="caption-uppercase">Last Updated</span>
+          <span class="body-strong">June 2026</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table of Contents / Main Content -->
+    <section class="content-section">
+      
+      <!-- 1. Introduction -->
+      <div class="card js-fade-in">
+        <div class="accordion-header active">
+          <h2 class="display-md">1. Introduction</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content active">
+          <div class="content-block">
+            <h3 class="display-sm">1.1 Purpose</h3>
+            <p>This Software Requirements Specification (SRS) document outlines the architectural, functional, and non-functional requirements for the <strong>AI Meeting Recorder</strong> system. It details the system context, actors, core use cases, and data models to ensure clear alignment across development, product, and QA teams.</p>
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">1.2 Scope</h3>
+            <p>The AI Meeting Recorder is a web-based platform that allows users to record or upload audio of meetings. The system utilizes Google's Gemini AI to transcribe the audio, generate comprehensive summaries, extract actionable items, and provide an interactive AI chat interface to query specific meeting details. It features a premium "glassmorphic" UI built with React, Vite, and Tailwind CSS, backed by an Express server and a local JSON database.</p>
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">1.3 Definitions and Acronyms</h3>
+            <div class="table-wrapper">
+              <table>
+                <tr><th>Term</th><th>Definition</th></tr>
+                <tr><td><strong>AI Studio</strong></td><td>Google's platform for running and testing Gemini AI models.</td></tr>
+                <tr><td><strong>Gemini API</strong></td><td>The underlying Large Language Model (LLM) used for audio transcription, summarization, and interactive chat queries.</td></tr>
+                <tr><td><strong>Glassmorphism</strong></td><td>A UI design trend characterized by translucent, frosted-glass-like backgrounds.</td></tr>
+                <tr><td><strong>SRS</strong></td><td>Software Requirements Specification.</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. System Context -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">2. System Context</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <h3 class="display-sm">2.1 Actors</h3>
+            <ul>
+              <li><strong>End User:</strong> Interacts with the web application to record audio, review meeting summaries, query the AI Assistant, and export meeting notes.</li>
+              <li><strong>React Frontend:</strong> Captures audio via the MediaRecorder API, visualizes waveforms, and renders Markdown results dynamically.</li>
+              <li><strong>Express Backend:</strong> Acts as the intermediary API gateway, manages local JSON database storage, and orchestrates calls to the Gemini API.</li>
+              <li><strong>Gemini AI (GoogleGenAI):</strong> Processes audio files multimodally to generate accurate transcripts, structured summaries, and action item lists.</li>
+            </ul>
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">2.2 Components Diagram</h3>
+            <p>The following architecture diagram illustrates the flow of data between the client, server, local database, and external AI services.</p>
+            
+            <div class="mermaid-wrapper" style="display: flex; justify-content: center; padding: 0; overflow: hidden; border: none; background: transparent;">
+              <img src="./architecture_diagram.png" alt="Architecture Diagram" style="width: 100%; max-width: 800px; height: auto; display: block; border-radius: var(--rounded-lg); box-shadow: 0 4px 24px rgba(0,0,0,0.06);" />
+            </div>
+
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">2.3 Module Description</h3>
+            <div class="table-wrapper">
+              <table>
+                <tr><th>Module</th><th>Description</th></tr>
+                <tr><td><strong>Authentication</strong></td><td>Handles user registration and login (mocked Google Auth and email/password), assigning a unique <code>usr_</code> ID.</td></tr>
+                <tr><td><strong>Meeting Storage</strong></td><td>Manages CRUD operations on <code>meetings-db.json</code> using the local filesystem. Stores heavy audio payloads as Base64 temporarily.</td></tr>
+                <tr><td><strong>AI Processing</strong></td><td>Orchestrates the <code>gemini-3.5-flash</code> model, injecting strict JSON-schema prompts for multimodal audio processing. Includes fallback simulation logic.</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Functional Requirements -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">3. Functional Requirements</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <h3 class="display-sm">3.1 Core Use Cases</h3>
+            <div class="table-wrapper">
+              <table>
+                <tr><th>FR ID</th><th>Requirement</th><th>Description</th><th>Priority</th></tr>
+                <tr><td>FR-001</td><td>User Authentication</td><td>The system shall allow users to register, log in via email, or use a mocked Google OAuth flow to access their personalized meeting dashboard.</td><td>High</td></tr>
+                <tr><td>FR-002</td><td>Audio Capture & Upload</td><td>The frontend shall capture microphone audio using the MediaRecorder API, or allow users to upload existing audio files.</td><td>High</td></tr>
+                <tr><td>FR-003</td><td>AI Transcription & Summary</td><td>The backend shall process audio (up to 50MB) via the Gemini API to return a full transcript, short/detailed summaries, action items, and key decisions.</td><td>Critical</td></tr>
+                <tr><td>FR-004</td><td>AI Chat Assistant</td><td>Users shall be able to ask specific questions about a past meeting. The system will use the meeting context and Gemini API to generate accurate answers.</td><td>Medium</td></tr>
+                <tr><td>FR-005</td><td>Markdown Export</td><td>The system shall compile meeting metadata, summaries, and action items into a downloadable Markdown file format.</td><td>Low</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">3.2 Meeting Processing Flow (Sequence)</h3>
+            <p>The sequence below defines the interaction between components when a user finishes recording a meeting.</p>
+            
+            <div class="mermaid-wrapper">
+              <div class="mermaid">
+                sequenceDiagram
+                  participant U as User
+                  participant C as Client (React)
+                  participant S as Server (Express)
+                  participant G as Gemini API
+                  
+                  U->>C: Stops Recording
+                  C->>S: POST /process (Audio Base64)
+                  S->>S: Update DB status to processing
+                  S->>G: generateContent (Audio, JSON Prompt)
+                  G-->>S: Raw JSON String
+                  S->>S: Parse JSON and Update DB
+                  S-->>C: Returns Meeting Object
+                  C-->>U: Renders Meeting Dashboard UI
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Non-Functional Requirements -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">4. Non-functional Requirements</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <div class="table-wrapper">
+              <table>
+                <tr><th>NFR ID</th><th>Category</th><th>Requirement</th><th>Target Measurement</th></tr>
+                <tr><td>NFR-001</td><td>Performance</td><td>The system must handle audio payloads efficiently.</td><td>Support payload limits up to 50MB via Express body parser.</td></tr>
+                <tr><td>NFR-002</td><td>Reliability</td><td>The system must provide fallback data if the Gemini API is overloaded or unavailable.</td><td>High-fidelity mock data fallback executes within 2 seconds of API failure.</td></tr>
+                <tr><td>NFR-003</td><td>Usability</td><td>The UI must follow the established "Glassmorphism" premium design tokens and pass accessibility contrast checks.</td><td>100% adherence to ElevenLabs design tokens and WCAG AA contrast.</td></tr>
+                <tr><td>NFR-004</td><td>Security</td><td>User passwords and session tokens must be managed securely (note: currently mocked for demonstration).</td><td>Basic email uniqueness validation applied.</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Interfaces -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">5. Interfaces</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <h3 class="display-sm">5.1 API Interface (REST)</h3>
+            <p>The Express backend exposes the following primary endpoints:</p>
+            <ul>
+              <li><code>POST /api/v1/auth/register</code> - Registers a new user. Expects <code>{name, email}</code>.</li>
+              <li><code>GET /api/v1/meetings</code> - Retrieves a lightweight list of meetings for the dashboard. Excludes heavy Base64 audio strings to optimize network load.</li>
+              <li><code>POST /api/v1/meetings/:id/process</code> - Core processing route. Expects <code>{ audioBase64, durationSec, mimeType }</code>.</li>
+              <li><code>POST /api/v1/meetings/:id/regenerate</code> - Re-runs the summary generation based purely on the existing transcript text.</li>
+              <li><code>POST /api/v1/meetings/:id/ask</code> - Interactive chat route. Expects <code>{ question }</code>.</li>
+              <li><code>GET /api/v1/meetings/:id/export?format=markdown</code> - Generates and serves a formatted Markdown string of the meeting.</li>
+            </ul>
+          </div>
+          <div class="content-block">
+            <h3 class="display-sm">5.2 External Integrations</h3>
+            <p><strong>Google Gemini API:</strong> Integrated via the <code>@google/genai</code> SDK. The system utilizes the <code>gemini-3.5-flash</code> model for its speed and multimodal capabilities, passing audio data inline and enforcing strict JSON output via prompt instructions and <code>responseMimeType: 'application/json'</code> configuration.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Data Requirements -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">6. Data Requirements</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <h3 class="display-sm">6.1 Entities & Schema</h3>
+            <p>Data is stored locally in <code>meetings-db.json</code>. The primary entity is the <strong>Meeting Record</strong>.</p>
+            <div class="table-wrapper">
+              <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>String</td><td>Primary Key identifier (e.g., <code>meet_12345</code>).</td></tr>
+                <tr><td><code>userId</code></td><td>String</td><td>Foreign Key linking to the User entity.</td></tr>
+                <tr><td><code>title</code></td><td>String</td><td>User-defined or auto-generated title of the meeting.</td></tr>
+                <tr><td><code>status</code></td><td>Enum</td><td>Current state: <code>draft</code> | <code>processing</code> | <code>completed</code> | <code>failed</code>.</td></tr>
+                <tr><td><code>transcript</code></td><td>Array</td><td>List of objects containing <code>{ startTimeSec, endTimeSec, speakerLabel, text }</code>.</td></tr>
+                <tr><td><code>summary</code></td><td>Object</td><td>Contains structured AI insights: <code>shortSummary</code>, <code>detailedSummary</code>, <code>keywords</code>, <code>risks</code>.</td></tr>
+                <tr><td><code>actionItems</code></td><td>Array</td><td>Tasks extracted by AI, including <code>{ id, title, assignee, dueDate, status }</code>.</td></tr>
+                <tr><td><code>decisions</code></td><td>Array</td><td>Key decisions formulated by AI.</td></tr>
+                <tr><td><code>audioBase64</code></td><td>String</td><td>The raw audio payload (temporarily stored).</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Assumptions -->
+      <div class="card js-fade-in">
+        <div class="accordion-header">
+          <h2 class="display-md">7. Assumptions and Dependencies</h2>
+          <span class="icon">↓</span>
+        </div>
+        <div class="accordion-content">
+          <div class="content-block">
+            <div class="table-wrapper">
+              <table>
+                <tr><th>ID</th><th>Assumption / Dependency</th><th>Impact</th></tr>
+                <tr><td>AD-001</td><td>Gemini API Availability</td><td>The system heavily relies on the Gemini API. If the API is down or the provided API key is invalid, the system automatically falls back to static high-fidelity simulated data to prevent application crashes.</td></tr>
+                <tr><td>AD-002</td><td>Local File Storage</td><td>Currently uses a flat JSON file (<code>meetings-db.json</code>) for database operations. This is sufficient for prototype/local execution but lacks concurrency controls required for production deployment.</td></tr>
+                <tr><td>AD-003</td><td>Browser Audio Support</td><td>Assumes modern browser support for <code>MediaRecorder API</code> producing standard MIME types (e.g., <code>audio/webm</code>).</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <!-- Use older, stable version of Mermaid (9.3.0) that DOES NOT use CORS-triggering iframes for local file:// execution -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.3.0/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ 
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#fafafa',
+        primaryTextColor: '#0c0a09',
+        primaryBorderColor: '#d6d3d1',
+        lineColor: '#a8a29e',
+        secondaryColor: '#f0efed',
+        tertiaryColor: '#e7e5e4',
+        fontSize: '18px',
+        fontFamily: 'Inter, sans-serif'
+      },
+      securityLevel: 'loose',
+      flowchart: {
+        useMaxWidth: false
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // Accordion Logic
+      const headers = document.querySelectorAll('.accordion-header');
+      headers.forEach(header => {
+        header.addEventListener('click', () => {
+          const content = header.nextElementSibling;
+          const isActive = header.classList.contains('active');
+          
+          if (isActive) {
+            gsap.to(content, { 
+              height: 0, 
+              opacity: 0, 
+              paddingTop: 0,
+              duration: 0.3, 
+              ease: "power2.out", 
+              onComplete: () => {
+                header.classList.remove('active');
+                content.classList.remove('active');
+              }
+            });
+          } else {
+            header.classList.add('active');
+            content.classList.add('active');
+            gsap.fromTo(content, 
+              { height: 0, opacity: 0, paddingTop: 0 }, 
+              { height: "auto", opacity: 1, paddingTop: 24, duration: 0.4, ease: "power2.out" }
+            );
+          }
+        });
+      });
+
+      // GSAP Animations: Fade In elements on load / scroll
+      gsap.utils.toArray('.js-fade-in').forEach((elem, i) => {
+        gsap.fromTo(elem, 
+          { y: 30, opacity: 0 }, 
+          { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", delay: i * 0.1 }
+        );
+      });
+
+      // GSAP Animations: Floating Orbs
+      gsap.to(".orb-mint", { y: "random(-40, 40)", x: "random(-20, 20)", duration: "random(4, 7)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".orb-peach", { y: "random(-30, 50)", x: "random(-40, 20)", duration: "random(5, 8)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".orb-lavender", { y: "random(-50, 30)", x: "random(-30, 30)", duration: "random(6, 9)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".orb-sky", { y: "random(-30, 40)", x: "random(-20, 40)", duration: "random(5, 8)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+    });
+  </script>
+</body>
+</html>
